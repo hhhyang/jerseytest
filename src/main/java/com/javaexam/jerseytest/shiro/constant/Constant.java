@@ -1,8 +1,6 @@
-package com.test.shiro.constant;
+package com.javaexam.jerseytest.shiro.constant;
 
-/**
- * @author Created by pangkunkun on 2017/11/20.
- */
+
 public class Constant {
 
     public static final String CRS_KEY="crsKey";

@@ -1,10 +1,10 @@
-package com.test.shiro.entity;
+package com.javaexam.jerseytest.shiro.entity;
+
+import lombok.Data;
 
 import java.io.Serializable;
 
-/**
- * @author Created by pangkunkun on 2017/11/16.
- */
+@Data
 public class UserRole implements Serializable{
 
     private static final long serialVersionUID = 1L;
@@ -13,19 +13,4 @@ public class UserRole implements Serializable{
 
     private String roleId;
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
-    }
 }

@@ -17,7 +17,7 @@ public class JerseyConfig extends ResourceConfig {
         // 注册指定的resource
         register(JerseyResource.class);
         // 在指定的package下扫描，添加带有 @Path @Provider 注解的类
-        // packages("com.javaexam.jerseytest.resource");
+        packages("com.javaexam.jerseytest.resource");
     }
 
 }

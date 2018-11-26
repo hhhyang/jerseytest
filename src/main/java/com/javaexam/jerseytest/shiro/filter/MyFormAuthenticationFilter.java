@@ -1,4 +1,4 @@
-package com.test.shiro.filter;
+package com.javaexam.jerseytest.shiro.filter;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-/**
- * @author Created by pangkunkun on 2017/11/19.
- */
+
 public class MyFormAuthenticationFilter extends FormAuthenticationFilter{
 
     private static final Logger log= LoggerFactory.getLogger(MyFormAuthenticationFilter.class);

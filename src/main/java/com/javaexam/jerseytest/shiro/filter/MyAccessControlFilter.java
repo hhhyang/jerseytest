@@ -1,9 +1,9 @@
-package com.test.shiro.filter;
+package com.javaexam.jerseytest.shiro.filter;
 
-import com.test.shiro.constant.Constant;
-import com.test.shiro.shiro.MyUsernamePasswordToken;
-import com.test.shiro.util.MD5Utils;
+import com.javaexam.jerseytest.shiro.constant.Constant;
+import com.javaexam.jerseytest.shiro.util.MD5Utils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.AccessControlFilter;
 import org.slf4j.Logger;
@@ -14,12 +14,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * @author Created by pangkunkun on 2017/11/18.
- */
+
 public class MyAccessControlFilter extends AccessControlFilter {
 
-    private static final Logger log= LoggerFactory.getLogger(MyAccessControlFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MyAccessControlFilter.class);
 
 
     /**
@@ -41,7 +39,7 @@ public class MyAccessControlFilter extends AccessControlFilter {
 //        String url = getPathWithinApplication(servletRequest);
 //        log.info("当前用户正在访问的 url => " + url);
 //        log.info("subject.isPermitted(url);"+subject.isPermitted(url));
-        return false;
+        return true;
     }
 
     /**
@@ -51,31 +49,31 @@ public class MyAccessControlFilter extends AccessControlFilter {
      * */
     @Override
     public boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception{
-        System.out.println("onAccessDenied");
-        String username=request.getParameter(Constant.CRS_KEY);
-        String signature=request.getParameter(Constant.SIGNATURE);
+
+
+        LOG.info("enter onAccessDenied");
+
+        String username = request.getParameter(Constant.CRS_KEY);
+        String signature = request.getParameter(Constant.SIGNATURE);
 
         String type=request.getParameter("type");
 
         //TODO 通过其它参数验证signature的正确性
-        String digestValue=MD5Utils.MD5SendParame(signature);
+        String digestValue= MD5Utils.MD5SendParame(signature);
 
-        MyUsernamePasswordToken token=new MyUsernamePasswordToken(username,type, digestValue);
-
-        System.out.println("token.getType():"+token.getType());
+        UsernamePasswordToken token = new UsernamePasswordToken(username,type, digestValue);
 
 
-//        MyUsernamePasswordToken token=new MyUsernamePasswordToken(username, signature);
         Subject subject= SecurityUtils.getSubject();
         try {
             subject.login(token);
         }catch (Exception e){
-            log.info("登陆失败");
-            log.info(e.getMessage());
+            LOG.info("登陆失败");
+            LOG.info(e.getMessage());
             onLoginFail(response);
             return false;
         }
-        log.info("登陆成功");
+        LOG.info("登陆成功");
         return true;
     }
 
@@ -83,7 +81,7 @@ public class MyAccessControlFilter extends AccessControlFilter {
      * 登录失败
      * */
     private void onLoginFail(ServletResponse response) throws IOException {
-        log.info("设置返回");
+        LOG.info("设置返回");
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 //        httpResponse.getWriter().write("login error");

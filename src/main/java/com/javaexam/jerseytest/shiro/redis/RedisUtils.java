@@ -1,16 +1,15 @@
-package com.test.shiro.redis;
+package com.javaexam.jerseytest.shiro.redis;
 
-import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Set;
 
-/**
- *@author  Created by Administrator on 2017/11/20.
- */
+
 @Component
 public class RedisUtils {
 

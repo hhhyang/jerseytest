@@ -1,4 +1,4 @@
-package com.test.shiro.redis;
+package com.javaexam.jerseytest.shiro.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachingConfigurerSupport;

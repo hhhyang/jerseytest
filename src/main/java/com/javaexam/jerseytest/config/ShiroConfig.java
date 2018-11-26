@@ -1,21 +1,21 @@
 package com.javaexam.jerseytest.config;
 
+import com.javaexam.jerseytest.shiro.filter.MyAccessControlFilter;
+import com.javaexam.jerseytest.shiro.realm.MyShiroRealm;
+import com.javaexam.jerseytest.shiro.realm.MyShiroRealm2;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy;
-import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import sun.security.krb5.Realm;
 
-import java.util.ArrayList;
+import javax.servlet.Filter;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -23,14 +23,23 @@ public class ShiroConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShiroConfig.class);
 
-    @Bean
-    public ShiroFilterFactoryBean shirFilter(SecurityManager securityManager){
 
+    @Bean
+    public static LifecycleBeanPostProcessor getLifecycleBeanPostProcessor() {
+        return new LifecycleBeanPostProcessor();
+    }
+
+    @Bean
+    public static DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator(){
+        return new DefaultAdvisorAutoProxyCreator();
+    }
+
+    @Bean
+    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager){
         ShiroFilterFactoryBean shiroFilterFactoryBean  = new ShiroFilterFactoryBean();
 
         // 必须设置 SecurityManager
         shiroFilterFactoryBean.setSecurityManager(securityManager);
-
         // 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
         shiroFilterFactoryBean.setLoginUrl("/login");
         // 登录成功后要跳转的链接
@@ -38,29 +47,22 @@ public class ShiroConfig {
         //未授权界面;
         shiroFilterFactoryBean.setUnauthorizedUrl("/403");
 
-        //自定义过滤器
-        // Map<String, Filter> filtersMap = new LinkedHashMap<String, Filter>();
-        // filtersMap.put("myAccessControlFilter", new MyAccessControlFilter());
-        // shiroFilterFactoryBean.setFilters(filtersMap);
+        // 自定义过滤器
+        Map<String, Filter> filtersMap = new LinkedHashMap<String, Filter>();
+        filtersMap.put("myAccessControlFilter", new MyAccessControlFilter());
+        shiroFilterFactoryBean.setFilters(filtersMap);
 
-        // 过滤器
+        // 过滤器链
         Map<String,String> filterChainDefinitionMap = new LinkedHashMap<String,String>();
-
-        // 对应 shiro.ini 的 [urls]部分配置
-        // 配置 进来的url需要执行的验证和授权检查
-
         filterChainDefinitionMap.put("/logout", "logout");
         filterChainDefinitionMap.put("/css/**","anon");
         filterChainDefinitionMap.put("/js/**","anon");
         filterChainDefinitionMap.put("/img/**","anon");
         filterChainDefinitionMap.put("/font-awesome/**","anon");
-
-
-
-        //  filterChainDefinitionMap.put("/users", "anon");
+        // filterChainDefinitionMap.put("/users", "anon");
         filterChainDefinitionMap.put("/createPermission", "anon");
         // filterChainDefinitionMap.put("/**", "myAccessControlFilter");
-        // filterChainDefinitionMap.put("/**", "authc");
+        filterChainDefinitionMap.put("/**", "authc");
 
         //自定义加载权限资源关系
 //        List<Resources> resourcesList = resourcesService.queryAll();
@@ -72,21 +74,16 @@ public class ShiroConfig {
 //            }
 //        }
 
+        // 添加过滤器链
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
     }
 
     @Bean
-    public SecurityManager securityManager(){
-        DefaultWebSecurityManager securityManager=new DefaultWebSecurityManager();
-        //设置realm.
-//        securityManager.setAuthenticator(modularRealmAuthenticator());
-        securityManager.setAuthenticator(customizedModularRealmAuthenticator());
-
-        List<Realm> realms=new ArrayList<>();
-        realms.add(myShiroRealm());
-        realms.add(myShiroRealm2());
-        securityManager.setRealms(realms);
+    public SecurityManager securityManager() {
+        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+        // 设置realm.
+        securityManager.setRealm(myShiroRealm());
         return securityManager;
     }
 
@@ -124,42 +121,5 @@ public class ShiroConfig {
 
         return hashedCredentialsMatcher;
     }
-
-
-    /**
-     *  开启shiro aop注解支持.
-     *  使用代理方式;所以需要开启代码支持;
-     * @param securityManager
-     * @return
-     */
-    @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager){
-        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
-        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
-        return authorizationAttributeSourceAdvisor;
-    }
-
-    /**
-     * 自定义的Realm管理，主要针对多realm
-     * */
-    @Bean
-    public MyModularRealmAuthenticator customizedModularRealmAuthenticator(){
-        MyModularRealmAuthenticator customizedModularRealmAuthenticator=new MyModularRealmAuthenticator();
-        //设置realm判断条件
-        customizedModularRealmAuthenticator.setAuthenticationStrategy(new AtLeastOneSuccessfulStrategy());
-
-        return customizedModularRealmAuthenticator;
-    }
-
-    /**
-     * 系统自带的Realm管理，主要针对多realm
-     * */
-    @Bean
-    public ModularRealmAuthenticator modularRealmAuthenticator(){
-        ModularRealmAuthenticator modularRealmAuthenticator=new ModularRealmAuthenticator();
-        modularRealmAuthenticator.setAuthenticationStrategy(new AtLeastOneSuccessfulStrategy());
-        return modularRealmAuthenticator;
-    }
-
 
 }
